@@ -1,0 +1,365 @@
+
+-- This is an extended version of the Wave Modifier
+-- So all credit to goes the great eyeon Team for this modifier
+-- i just addin the tween functions base on Robert Penners function http://www.robertpenner.com/easing/
+
+FuRegisterClass("ExtendedWaveModifier", CT_Modifier, {
+	REGS_Name = "Extended Wave Modifier",
+	REGS_Category = "Fuses\\nativeSTUDIO\\Animation",
+	REGS_OpIconString = "ExW",
+	REGS_OpDescription = "Extended Wave Modifier",
+	REG_OpNoMask = true,
+	REG_NoBlendCtrls = true,
+	REG_NoObjMatCtrls = true,
+	REG_NoMotionBlurCtrls = true,
+	REG_TimeVariant = true,
+	REGID_DataType = "Number",
+	})
+WVM_UpDown = "UpDown"
+WVM_Line = "Line"
+WVM_Saw = "Saw"
+WVM_Tri = "Tri"
+WVM_Square = "Square"
+WVM_Sine = "Sine"
+WVM_Noise = "Noise"
+WVM_Tween = "Tween"
+
+
+	
+function Create()
+
+	InWave = self:AddInput("Wave", "Wave", {
+		LINKID_DataType =		"FuID",
+		INPID_InputControl =	"MultiButtonIDControl",
+		MBTNC_StretchToFit = true,
+		{ MBTNC_AddButton =		WVM_UpDown  },
+		{ MBTNC_AddButton =		WVM_Line },
+		{ MBTNC_AddButton =		WVM_Saw },
+		{ MBTNC_AddButton =		WVM_Tri },
+		{ MBTNC_AddButton =		WVM_Square },
+		{ MBTNC_AddButton =		WVM_Sine }, 
+		{ MBTNC_AddButton =		WVM_Noise },
+		{ MBTNC_AddButton =		WVM_Tween },
+		})	
+
+	InPeriod = self:AddInput("Period", "Period", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"SliderControl",
+		INP_Default =			5.0,
+		INP_MinAllowed =		0.0,
+		INP_MaxScale =			50.0,
+		})	
+
+	InStrength = self:AddInput("Strength", "Strength", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"SliderControl",
+		INP_Default =			1.0,
+		INP_MaxScale = 			10.0,
+		ICD_Center =             1.0,
+		})	
+		
+	InOffset = self:AddInput("Offset", "Offset", {
+		LINKID_DataType =		"Number",
+		LINKID_Main =			1,
+		INPID_InputControl =	"ScrewControl",
+		})	
+
+	InLimit = self:AddInput("Limit", "Limit", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"CheckboxControl",
+		INP_Default = 			0.0,
+		ICD_Width =           	0.25,
+		
+		})	
+	
+	InRepeat = self:AddInput("Repeat", "Repeat", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"SliderControl",
+		INP_Default = 			1.0,
+		INP_MinAllowed =        0.0,
+		INP_MaxScale =          10.0,
+		ICD_Width =           	0.75,
+		})	
+	InReverse = self:AddInput("Reverse", "Reverse", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"CheckboxControl",
+		INP_Default = 			0.0,
+		ICD_Width =           	0.25,
+		})
+			---------------RANGE MASTER--------------------------------	
+	self:BeginControlNest("TWEEN", "TWEENSETTINGS", false, {})
+		
+		InEaseFunction = self:AddInput("Ease Function", "Operator", {
+		LINKID_DataType = "Number",
+		INPID_InputControl = "ComboControl",
+		INP_Default = 0,
+		INP_Integer = true,
+		--ICD_Width = 0.5,
+
+		{ CCS_AddString = "linearTween", },
+		{ CCS_AddString = "easeInQuint", },
+		{ CCS_AddString = "easeOutQuint", },
+		{ CCS_AddString = "easeInSine", },
+		{ CCS_AddString = "easeOutSine", },
+		{ CCS_AddString = "easeInOutSine", },
+		{ CCS_AddString = "easeInExpo", },
+		{ CCS_AddString = "easeOutExpo", },
+		
+		CC_LabelPosition = "Horizontal",
+		})
+		
+		
+		
+		
+	
+		InDuration= self:AddInput("Duration", "Duration", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"SliderControl",
+		INP_Default =			0,
+		INP_MinAllowed =		0,
+		INP_MaxScale =			300,
+		INP_Integer        = true,
+	
+				})
+				
+				
+	----------------RANGE  --------------------------------------
+
+	InStartAt= self:AddInput("StartAt", "StartAt", {
+			LINKID_DataType = "Number",
+--			INP_Integer = true,			
+			INPID_InputControl = "ScrewControl",
+		--	IC_ControlPage = 0,
+		--	IC_ControlGroup = 1,			
+		--	IC_ControlID = 0,			
+			LINKS_Name = "StartAt",		
+			INP_MinScale = -0.5,			
+			INP_MaxScale = 2,			
+--			RNGCD_LowOuterLength = "0.1",		
+			INP_Default = 0,
+			
+			
+		})
+
+		
+	InEndAt= self:AddInput("EndAt", "EndAt", {
+			LINKID_DataType = "Number",
+--			INP_Integer = true,		
+			INPID_InputControl = "ScrewControl",
+		--	IC_ControlPage = 0,
+		--	IC_ControlGroup = 1,
+		--	IC_ControlID = 1,			
+			LINKS_Name = "EndAt",			
+			INP_MinScale = -0.5,
+			INP_MaxScale = 2,
+--			RNGCD_HighOuterLength = "0.1",		
+			INP_Default = 1,	
+			
+						
+		})
+		self:EndControlNest()
+	InDelayTime= self:AddInput("DELAY_STARTTime", "DelayTime", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"SliderControl",
+		INP_Default =			0,
+		INP_MinAllowed =		0,
+		INP_MaxScale =			500,
+		INP_Integer        = true,
+				})
+	InHoldTime= self:AddInput("HoldTime", "HoldTime", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"SliderControl",
+		INP_Default =			1,
+		INP_MinAllowed =		-1,
+		INP_MaxScale =			1,
+		--INP_Integer        = true,
+				})
+InSpaceTime= self:AddInput("SpaceTime", "SpaceTime", {
+		LINKID_DataType =		"Number",
+		INPID_InputControl =	"SliderControl",
+		INP_Default =			0.0,
+		INP_MinAllowed =		-1.0,
+		INP_MaxScale =			1.0,
+		--INP_Integer        = true,
+				})
+	---------------------------------------------------------	
+		
+		
+
+	OutResult = self:AddOutput("Result", "Result", {
+		LINKID_DataType = "Number",
+		LINK_Main = 1,
+		})				
+end
+
+
+
+--//_________________________________________**
+function easeIn(r, p, f) 
+if p == undefined then  p = 2; end
+if f == ezExpo then  f = "ezExpo"; return ezExpo(r, p);else return math.pow(r, p)end
+if f == ezCirc then  f = "ezCirc"; return ezCirc(r, p);else return math.pow(r, p)end
+if f == esSine then  f ="esSine";  return esSine(r, p);else return math.pow(r, p)end
+
+end 
+--//_________________________________________**
+--//_________________________________________**
+
+--//----------------------------------------------
+function linearTween(t, b, c, d) 
+return c*t/d + b;
+end
+--//----------------------------------------------
+function easeInQuint (t, b, c, d) 
+return c * math.pow (t/d, 5) + b;
+end
+function easeOutQuint(t, b, c, d) 
+return c * (math.pow (t/d-1, 5) + 1) + b;
+end
+
+function easeInSine(t, b, c, d) 
+return c * (1 - math.cos(t/d * (math.pi/2))) + b;
+end
+function easeOutSine (t, b, c, d) 
+return c * math.sin(t/d * (math.pi/2)) + b;
+end
+function easeInOutSine(t, b, c, d) 
+return c/2 * (1 - math.cos(math.pi*t/d)) + b;
+end
+
+
+function easeInExpo(t, b, c, d) 
+return c * math.pow(2, 10 * (t/d - 1)) + b;
+end
+function easeOutExpo(t, b, c, d) 
+return c * (-math.pow(2, -10 * t/d) + 1) + b;
+end
+
+
+--//----------------------------------------------
+
+function Process(req) 
+
+	local t = req.Time
+	local wave = InWave:GetValue(req).Value
+	local period = InPeriod:GetValue(req).Value
+	local strength = InStrength:GetValue(req).Value
+	local offset = InOffset:GetValue(req).Value
+	local freq = 1.0 / period
+	local limit = InLimit:GetValue(req).Value
+	local times = InRepeat:GetValue(req).Value
+	local spacetime=InSpaceTime:GetValue(req).Value
+	
+	local sin = math.sin
+	local cos = math.cos
+	local exp = math.exp
+	local pi = math.pi
+	local abs = math.abs
+	local sqrt= math.sqrt
+	
+	
+	
+	
+	----------------- EASE ANIMATION-------------------------
+	---------------------------------------------------------
+		
+
+	
+	local EaseStyle={"linearTween", "easeInQuint", "easeOutQuint", "easeInSine","easeOutSine", "easeInOutSine","easeInExpo","easeOutExpo" }
+	
+	local easeBase=EaseStyle[InEaseFunction:GetValue(req).Value+1]
+	
+	local Hold_Time = InHoldTime:GetValue(req).Value
+	local Delay_Time = InDelayTime:GetValue(req).Value
+	
+	local Duration	=			InDuration:GetValue(req).Value
+	local StartAt	=			InStartAt:GetValue(req).Value
+	local EndAt 	=			InEndAt:GetValue(req).Value
+	local change,Duration_Pos;
+	local r=StartAt
+	local reverseNum = InReverse:GetValue(req).Value
+
+	
+	if (t > Delay_Time) then
+
+	if limit == 1 then
+		t = math.min(t, period * times)
+		t = math.max(t, 0)
+	end
+	
+--//----------------------------------------------
+--//----------------------------------------------	
+	
+	if wave == WVM_Line then
+		r = (t-Delay_Time) * freq
+		r = r * strength + offset
+		
+--//----------------------------------------------
+--//----------------------------------------------		
+	elseif wave == WVM_Tween then
+	
+local begin = StartAt;
+local finish = EndAt;
+local change = finish - begin;
+
+	Duration_Pos=Duration+Delay_Time;
+
+	if((t-(Delay_Time)) < Duration_Pos ) then
+	
+	if (easeBase == "linearTween") then r = linearTween ((t-Delay_Time), begin, change, Duration_Pos)  end 
+	if (easeBase == "easeInQuint") then r = easeInQuint ((t-Delay_Time), begin, change, Duration_Pos)  end 
+	if (easeBase == "easeOutQuint") then r = easeOutQuint ((t-Delay_Time), begin, change, Duration_Pos)  end 
+	if (easeBase == "easeInSine") then r = easeInSine ((t-Delay_Time), begin, change, Duration_Pos)  end 
+	if (easeBase == "easeOutSine") then r = easeOutSine ((t-Delay_Time), begin, change, Duration_Pos)  end 
+	if (easeBase == "easeInOutSine") then r = easeInOutSine ((t-Delay_Time), begin, change, Duration_Pos)  end 
+	if (easeBase == "easeInExpo") then r = easeInExpo((t-Delay_Time), begin, change, Duration_Pos)  end 
+	if (easeBase == "easeOutExpo") then r = easeOutExpo ((t-Delay_Time), begin, change, Duration_Pos)  end 
+	
+	else
+	r = EndAt
+	end
+--//----------------------------------------------
+--//----------------------------------------------
+	elseif wave == WVM_Saw then
+	--	r = (t-Delay_Time) * freq % 1.0
+	--	r = math.exp(r * strength + offset)*Hold_Time
+--r =(1 - math.sqrt(1-(r * strength + offset)^Hold_Time)%1.0)*2
+	---interesting curve
+		r = 1 - math.abs(((t-Delay_Time) * freq % 1.0) - 0.5) * 2
+		r = math.sin(r^Hold_Time) * strength + offset
+		--r = r * strength + offset
+		--r=1*(r*math.sqrt(r^2*spacetime))
+		
+		---Orignal
+	 --  r = (t-Delay_Time) * freq % 1.0
+	 --	 r = r * strength + offset
+	
+	
+	elseif wave == WVM_UpDown then
+		r = 1 - math.abs(((t-Delay_Time) * freq % 1.0) - 0.5) * 2
+		r = r * strength + offset
+	
+	
+	elseif wave == WVM_Tri then
+		r = 1 - math.abs(((t-Delay_Time) * freq % 1.0) - 0.5) * 2
+		r = r * strength + offset
+	elseif wave == WVM_Square then
+		r = ((t-Delay_Time) * freq % 1.0 < 0.5) and 1 or 0
+		r = r * strength + offset
+	elseif wave == WVM_Sine then
+		r = math.sin((t-Delay_Time) * freq * 2 * math.pi) * 0.5 + 0.5
+		r = r * strength + offset
+	elseif wave == WVM_Noise then
+		r = eyeon.noise((t-Delay_Time) * freq * 2) * 2 + .5
+		r = r * strength + offset
+	end
+	
+	if reverseNum == 1 then
+	r = -(r * strength + offset)
+	else
+	r = r * strength + offset
+	end
+	
+	end
+	OutResult:Set(req, Number(r))
+end
